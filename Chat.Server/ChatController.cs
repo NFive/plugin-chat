@@ -1,24 +1,25 @@
 using JetBrains.Annotations;
+using NFive.Chat.Shared;
 using NFive.SDK.Core.Chat;
 using NFive.SDK.Core.Diagnostics;
-using NFive.SDK.Core.Rpc;
+using NFive.SDK.Core.Events;
+using NFive.SDK.Server.Communications;
 using NFive.SDK.Server.Controllers;
-using NFive.SDK.Server.Events;
 using NFive.SDK.Server.Rcon;
-using NFive.SDK.Server.Rpc;
 
 namespace NFive.Chat.Server
 {
 	[PublicAPI]
 	public class ChatController : ConfigurableController<Configuration>
 	{
-		public ChatController(ILogger logger, IEventManager events, IRpcHandler rpc, IRconManager rcon, Configuration configuration) : base(logger, events, rpc, rcon, configuration)
+		public ChatController(ILogger logger, Configuration configuration, ICommunicationManager comms, IRconManager rcon) : base(logger, configuration)
 		{
-			this.Rpc.Event(RpcEvents.ChatSendMessage).On<ChatMessage>((e, message) =>
-			{
-				this.Logger.Debug($"Got message: {message.Content}");
+			// Send configuration when requested
+			comms.Event(ChatEvents.Configuration).FromClients().OnRequest(e => e.Reply(this.Configuration));
 
-				this.Rpc.Event(RpcEvents.ChatSendMessage).Trigger(message);
+			comms.Event(CoreEvents.ChatSendMessage).FromClients().On<ChatMessage>((e, message) =>
+			{
+				comms.Event(CoreEvents.ChatSendMessage).ToClients().Emit(message);
 			});
 		}
 	}
