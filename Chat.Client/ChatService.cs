@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CitizenFX.Core;
 using CitizenFX.Core.Native;
@@ -7,6 +8,7 @@ using NFive.Chat.Shared;
 using NFive.SDK.Client.Commands;
 using NFive.SDK.Client.Communications;
 using NFive.SDK.Client.Events;
+using NFive.SDK.Client.Input;
 using NFive.SDK.Client.Interface;
 using NFive.SDK.Client.Services;
 using NFive.SDK.Core.Chat;
@@ -36,6 +38,7 @@ namespace NFive.Chat.Client
 		{
 			// Request server configuration
 			this.config = await this.Comms.Event(ChatEvents.Configuration).ToServer().Request<Configuration>();
+			var hotkey = new Hotkey(this.config.Hotkey);
 
 			// Create overlay
 			this.overlay = new ChatOverlay(this.OverlayManager);
@@ -57,7 +60,7 @@ namespace NFive.Chat.Client
 			// Attach a tick handler
 			this.Ticks.On(() =>
 			{
-				if (!Game.IsControlJustReleased(0, Control.MpTextChatAll)) return; // T
+				if (!hotkey.IsJustPressed()) return;
 
 				// Show chat overlay
 				this.overlay.Open();

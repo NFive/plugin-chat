@@ -5,14 +5,13 @@ using NFive.SDK.Core.Diagnostics;
 using NFive.SDK.Core.Events;
 using NFive.SDK.Server.Communications;
 using NFive.SDK.Server.Controllers;
-using NFive.SDK.Server.Rcon;
 
 namespace NFive.Chat.Server
 {
 	[PublicAPI]
 	public class ChatController : ConfigurableController<Configuration>
 	{
-		public ChatController(ILogger logger, Configuration configuration, ICommunicationManager comms, IRconManager rcon) : base(logger, configuration)
+		public ChatController(ILogger logger, Configuration configuration, ICommunicationManager comms) : base(logger, configuration)
 		{
 			// Send configuration when requested
 			comms.Event(ChatEvents.Configuration).FromClients().OnRequest(e => e.Reply(this.Configuration));
