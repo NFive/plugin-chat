@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CitizenFX.Core;
 using CitizenFX.Core.Native;
@@ -8,6 +7,7 @@ using NFive.Chat.Shared;
 using NFive.SDK.Client.Commands;
 using NFive.SDK.Client.Communications;
 using NFive.SDK.Client.Events;
+using NFive.SDK.Client.Extensions;
 using NFive.SDK.Client.Input;
 using NFive.SDK.Client.Interface;
 using NFive.SDK.Client.Services;
@@ -41,19 +41,27 @@ namespace NFive.Chat.Client
 			var hotkey = new Hotkey(this.config.Hotkey);
 
 			// Create overlay
-			this.overlay = new ChatOverlay(this.OverlayManager);
+			this.overlay = new ChatOverlay(this.OverlayManager, this.config.HistoryLimit);
 
+			// Add default message template
+			this.overlay.AddTemplate("default", this.config.DefaultTemplate);
+
+			// Listen to overlay
 			this.overlay.MessageEntered += (s, a) =>
 			{
-				this.Comms.Event(CoreEvents.ChatSendMessage).ToServer().Emit(new ChatMessage
-				{
-					Content = a.Message
-				});
+				// Transmit message
+				this.Comms.Event(ChatEvents.MessageEntered).ToServer().Emit(a.Message);
 			};
 
-			// Listen for server messages
-			this.Comms.Event(CoreEvents.ChatSendMessage).FromServer().On<ChatMessage>((e, message) =>
+			// Listen for messages
+			this.Comms.Event(CoreEvents.ChatMessage).FromServer().On<ChatMessage>((e, message) =>
 			{
+				if (message.Location != null && message.Radius.HasValue && message.Radius > 0f && World.GetDistance(message.Location.ToCitVector3(), Game.PlayerPed.Position) > 20f)
+				{
+					// Player is not in rage
+					return;
+				}
+
 				this.overlay.AddMessage(message);
 			});
 

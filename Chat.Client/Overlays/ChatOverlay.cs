@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using NFive.SDK.Client.Interface;
 using NFive.SDK.Core.Chat;
 
@@ -6,20 +8,46 @@ namespace NFive.Chat.Client.Overlays
 {
 	public class ChatOverlay : Overlay
 	{
+		private readonly int historyLimit;
+
+		public Dictionary<string, string> Templates = new Dictionary<string, string>();
+
 		public event EventHandler<MessageEventArgs> MessageEntered;
 
-		public ChatOverlay(IOverlayManager manager) : base(manager)
+		public ChatOverlay(IOverlayManager manager, int historyLimit) : base(manager)
 		{
+			this.historyLimit = historyLimit;
+
 			On("message", new Action<string>(message => this.MessageEntered?.Invoke(this, new MessageEventArgs(this, message))));
 
 			On("blur", Blur);
 		}
 
-		protected override dynamic Ready() => null;
+		protected override dynamic Ready() => new
+		{
+			history = this.historyLimit // Max chat history items
+		};
 
 		public void AddMessage(ChatMessage message)
 		{
-			Emit("add-message", message.Content);
+			Emit("add-message", new
+			{
+				style = message.Style,
+				message = string.Format(this.Templates[message.Template], message.Values
+					.Select(v => v
+						.Replace("&", "&amp;")
+						.Replace("<", "&lt;")
+						.Replace(">", "&gt;")
+						.Replace("\"", "&quot;")
+					)
+					.Cast<object>()
+					.ToArray())
+			});
+		}
+
+		public void AddTemplate(string name, string template)
+		{
+			this.Templates[name] = template;
 		}
 
 		public void Open()
