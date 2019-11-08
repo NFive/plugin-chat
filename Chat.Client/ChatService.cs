@@ -56,7 +56,7 @@ namespace NFive.Chat.Client
 			// Listen for messages
 			this.Comms.Event(CoreEvents.ChatMessage).FromServer().On<ChatMessage>((e, message) =>
 			{
-				if (message.Location != null && message.Radius.HasValue && message.Radius > 0f && World.GetDistance(message.Location.ToCitVector3(), Game.PlayerPed.Position) > 20f)
+				if (message.Location != null && message.Radius.HasValue && message.Radius > 0f && World.GetDistance(message.Location.ToCitVector3(), Game.PlayerPed.Position) > message.Radius)
 				{
 					// Player is not in rage
 					return;
