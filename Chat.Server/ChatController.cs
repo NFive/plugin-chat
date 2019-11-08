@@ -24,8 +24,8 @@ namespace NFive.Chat.Server
 				// Check if message is a command
 				if (string.IsNullOrWhiteSpace(this.Configuration.CommandPrefix) || message.Trim().StartsWith(this.Configuration.CommandPrefix))
 				{
-					// Dispatch command
-					comms.Event(CoreEvents.CommandDispatch).ToClients().Emit(message.Trim().Substring(1).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList());
+					// Dispatch command to sender
+					comms.Event(CoreEvents.CommandDispatch).ToClient(e.Client).Emit(message.Trim().Substring(1).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList());
 				}
 				else
 				{
