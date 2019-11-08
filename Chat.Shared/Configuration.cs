@@ -13,6 +13,6 @@ namespace NFive.Chat.Shared
 
 		public string DefaultTemplate { get; set; } = "<h1><i class=\"fas fa-fw fa-star\"></i> {0}</h1>{1}";
 
-		public string DefaultStyle { get; set; } = "secondary";
+		public ChatStyles DefaultStyle { get; set; } = ChatStyles.Secondary;
 	}
 }

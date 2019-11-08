@@ -33,7 +33,7 @@ namespace NFive.Chat.Server
 					comms.Event(CoreEvents.ChatMessage).ToClients().Emit(new ChatMessage
 					{
 						Sender = e.User,
-						Style = this.Configuration.DefaultStyle,
+						Style = this.Configuration.DefaultStyle.ToString("G").ToLowerInvariant(),
 						Template = "default",
 						Values = new[]
 						{
