@@ -22,14 +22,10 @@ namespace NFive.Chat.Server
 			comms.Event(ChatEvents.MessageEntered).FromClients().On<string>((e, message) =>
 			{
 				// Check if message is a command
-				if (message.Trim().StartsWith("/"))
+				if (string.IsNullOrWhiteSpace(this.Configuration.CommandPrefix) || message.Trim().StartsWith(this.Configuration.CommandPrefix))
 				{
-					this.Logger.Debug(message.Trim().Substring(1));
-
 					// Dispatch command
 					comms.Event(CoreEvents.CommandDispatch).ToClients().Emit(message.Trim().Substring(1).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList());
-
-					this.Logger.Debug(message.Trim().Substring(1));
 				}
 				else
 				{
@@ -37,7 +33,7 @@ namespace NFive.Chat.Server
 					comms.Event(CoreEvents.ChatMessage).ToClients().Emit(new ChatMessage
 					{
 						Sender = e.User,
-						Style = "secondary",
+						Style = this.Configuration.DefaultStyle,
 						Template = "default",
 						Values = new[]
 						{
