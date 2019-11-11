@@ -1,10 +1,9 @@
-using System;
 using System.Linq;
 using JetBrains.Annotations;
 using NFive.Chat.Shared;
-using NFive.SDK.Core.Chat;
 using NFive.SDK.Core.Diagnostics;
 using NFive.SDK.Core.Events;
+using NFive.SDK.Core.Extensions;
 using NFive.SDK.Server.Communications;
 using NFive.SDK.Server.Controllers;
 
@@ -24,7 +23,8 @@ namespace NFive.Chat.Server
 				// Check if message is a command
 				if (string.IsNullOrWhiteSpace(this.Configuration.CommandPrefix) || message.Trim().StartsWith(this.Configuration.CommandPrefix))
 				{
-					var args = message.Trim().Substring(this.Configuration.CommandPrefix.Length).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+					// Split message by space, respecting double quotes
+					var args = message.Trim().Substring(this.Configuration.CommandPrefix.Length).SplitArguments().ToList();
 
 					// Dispatch command to sender
 					comms.Event(CoreEvents.CommandDispatch).ToClient(e.Client).Emit(args);
@@ -32,7 +32,7 @@ namespace NFive.Chat.Server
 				else
 				{
 					// Un-prefixed message, send to everyone
-					comms.Event(CoreEvents.ChatMessage).ToClients().Emit(new ChatMessage
+					comms.Event(ChatEvents.ChatMessage).ToClients().Emit(new ChatMessage
 					{
 						Sender = e.User,
 						Style = this.Configuration.DefaultStyle.ToString("G").ToLowerInvariant(),

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NFive.Chat.Shared;
 using NFive.SDK.Client.Interface;
-using NFive.SDK.Core.Chat;
 
 namespace NFive.Chat.Client.Overlays
 {

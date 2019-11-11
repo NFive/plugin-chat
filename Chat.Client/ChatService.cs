@@ -11,7 +11,6 @@ using NFive.SDK.Client.Extensions;
 using NFive.SDK.Client.Input;
 using NFive.SDK.Client.Interface;
 using NFive.SDK.Client.Services;
-using NFive.SDK.Core.Chat;
 using NFive.SDK.Core.Diagnostics;
 using NFive.SDK.Core.Events;
 using NFive.SDK.Core.Models.Player;
@@ -54,7 +53,7 @@ namespace NFive.Chat.Client
 			};
 
 			// Listen for messages
-			this.Comms.Event(CoreEvents.ChatMessage).FromServer().On<ChatMessage>((e, message) =>
+			this.Comms.Event(ChatEvents.ChatMessage).FromServer().On<ChatMessage>((e, message) =>
 			{
 				if (message.Location != null && message.Radius.HasValue && message.Radius > 0f && World.GetDistance(message.Location.ToCitVector3(), Game.PlayerPed.Position) > message.Radius)
 				{
