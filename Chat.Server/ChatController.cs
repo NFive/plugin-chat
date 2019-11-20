@@ -1,8 +1,9 @@
+using System.Linq;
 using JetBrains.Annotations;
 using NFive.Chat.Shared;
-using NFive.SDK.Core.Chat;
 using NFive.SDK.Core.Diagnostics;
 using NFive.SDK.Core.Events;
+using NFive.SDK.Core.Extensions;
 using NFive.SDK.Server.Communications;
 using NFive.SDK.Server.Controllers;
 
@@ -16,9 +17,33 @@ namespace NFive.Chat.Server
 			// Send configuration when requested
 			comms.Event(ChatEvents.Configuration).FromClients().OnRequest(e => e.Reply(this.Configuration));
 
-			comms.Event(CoreEvents.ChatSendMessage).FromClients().On<ChatMessage>((e, message) =>
+			// Listen to new client messages
+			comms.Event(ChatEvents.MessageEntered).FromClients().On<string>((e, message) =>
 			{
-				comms.Event(CoreEvents.ChatSendMessage).ToClients().Emit(message);
+				// Check if message is a command
+				if (string.IsNullOrWhiteSpace(this.Configuration.CommandPrefix) || message.Trim().StartsWith(this.Configuration.CommandPrefix))
+				{
+					// Split message by space, respecting double quotes
+					var args = message.Trim().Substring(this.Configuration.CommandPrefix.Length).SplitArguments().ToList();
+
+					// Dispatch command to sender
+					comms.Event(CoreEvents.CommandDispatch).ToClient(e.Client).Emit(args);
+				}
+				else
+				{
+					// Un-prefixed message, send to everyone
+					comms.Event(ChatEvents.ChatMessage).ToClients().Emit(new ChatMessage
+					{
+						Sender = e.User,
+						Style = this.Configuration.DefaultStyle.ToString("G").ToLowerInvariant(),
+						Template = "default",
+						Values = new[]
+						{
+							e.User.Name,
+							message
+						}
+					});
+				}
 			});
 		}
 	}
