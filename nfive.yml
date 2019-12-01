@@ -6,13 +6,13 @@ website: https://nfive.io/
 license: LGPL-3.0-or-later
 server:
   main:
-    - NFive.Chat.Server
+  - NFive.Chat.Server
   include:
-    - NFive.Chat.Shared
+  - NFive.Chat.Shared
 client:
   main:
-    - NFive.Chat.Client
+  - NFive.Chat.Client
   include:
-    - NFive.Chat.Shared
+  - NFive.Chat.Shared
   files:
-    - Overlays/ChatOverlay.html
+  - Overlays/ChatOverlay.html
